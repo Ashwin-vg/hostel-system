@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Dashboard</title>
+<link rel="stylesheet" href="/static/styles.css">
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+<img src="/static/logo.png" class="logo">
+<h3>HostelSys</h3>
+
+<ul>
+<li class="active"><a href="#"><img src="/static/dashboard.png"> Dashboard</a></li>
+<li><a href="/static/students.html"><img src="/static/student.png"> Students</a></li>
+<li><a href="/static/rooms.html"><img src="/static/room.png"> Rooms</a></li>
+<li><a href="/static/allocation.html"><img src="/static/allocation.png"> Allocation</a></li>
+<li><a href="/static/dues.html"><img src="/static/dues.png"> Dues</a></li>
+</ul>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<h1>Dashboard</h1>
+
+<!-- STATS -->
+<div class="cards">
+
+<div class="card">
+<h3>Total Students</h3>
+<p id="studentsCount">0</p>
+</div>
+
+<div class="card">
+<h3>Available Beds</h3>
+<p id="bedsCount">0</p>
+</div>
+
+<div class="card" onclick="goDues()" style="cursor:pointer;">
+<h3>Pending Dues</h3>
+<p id="duesCount">0</p>
+</div>
+
+</div>
+
+<br>
+
+<!-- QUICK ACTIONS -->
+<div class="card">
+<h3>Quick Actions</h3>
+
+<button onclick="go('/static/students.html')">Add Student</button>
+<button onclick="go('/static/rooms.html')">View Rooms</button>
+<button onclick="go('/static/allocation.html')">Allocate Room</button>
+<button onclick="go('/static/dues.html')">View Dues</button>
+
+</div>
+
+<br>
+
+<!-- BANNER -->
+<div class="card" style="text-align:center;">
+<img src="/static/banner.jpg" style="width:100%; max-height:300px; object-fit:cover; border-radius:10px;">
+</div>
+
+</div>
+</div>
+
+<script>
+
+// LOAD STATS
+fetch("/stats")
+.then(res => res.json())
+.then(data => {
+document.getElementById("studentsCount").innerText = data.students;
+document.getElementById("bedsCount").innerText = data.available_beds;
+document.getElementById("duesCount").innerText = data.dues;
+});
+
+// NAVIGATION
+function go(url){
+window.location.href = url;
+}
+
+function goDues(){
+window.location.href = "/static/dues.html";
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Allocation</title>
+<link rel="stylesheet" href="/static/styles.css">
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+<img src="/static/logo.png" class="logo">
+<h3>HostelSys</h3>
+
+<ul>
+<li><a href="/static/index.html"><img src="/static/dashboard.png"> Dashboard</a></li>
+<li><a href="/static/students.html"><img src="/static/student.png"> Students</a></li>
+<li><a href="/static/rooms.html"><img src="/static/room.png"> Rooms</a></li>
+<li class="active"><a href="#"><img src="/static/allocation.png"> Allocation</a></li>
+<li><a href="/static/dues.html"><img src="/static/dues.png"> Dues</a></li>
+</ul>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<h1>Allocation</h1>
+
+<!-- INPUT -->
+<input id="sid" placeholder="Student ID">
+<input id="rid" placeholder="Room ID">
+<button onclick="allocate()">Allocate</button>
+
+<p id="msg"></p>
+
+<hr>
+
+<!-- STUDENTS LIST -->
+<h2>Students</h2>
+<input id="studentSearch" placeholder="Search student..." onkeyup="loadStudents()">
+
+<div id="students" class="card"></div>
+
+<hr>
+
+<!-- ROOMS LIST -->
+<h2>Rooms</h2>
+<input id="roomSearch" placeholder="Search room..." onkeyup="loadRooms()">
+
+<div id="rooms" class="card"></div>
+
+</div>
+</div>
+
+<script>
+
+const API = "http://127.0.0.1:8001";
+
+/* ================= ALLOCATE ================= */
+async function allocate(){
+
+let form = new FormData();
+form.append("student_id", document.getElementById("sid").value);
+form.append("room_id", document.getElementById("rid").value);
+
+let res = await fetch(API + "/allocate", {
+method:"POST",
+body:form
+});
+
+let data = await res.json();
+document.getElementById("msg").innerText = data.msg;
+
+loadRooms();
+loadStudents();
+}
+
+/* ================= LOAD STUDENTS ================= */
+async function loadStudents(){
+
+let res = await fetch(API + "/students/all");
+let data = await res.json();
+
+let search = document.getElementById("studentSearch").value.toLowerCase();
+
+let html = "";
+
+data.forEach(s => {
+
+if(s.name.toLowerCase().includes(search)){
+
+html += `
+<div class="row">
+<b>${s.name}</b> (ID: ${s.id}) - ${s.dept} - ${s.gender}
+<button onclick="selectStudent(${s.id})">Select</button>
+<button onclick="deallocate(${s.id})">Deallocate</button>
+</div>
+`;
+
+}
+
+});
+
+document.getElementById("students").innerHTML = html;
+}
+
+/* ================= LOAD ROOMS ================= */
+async function loadRooms(){
+
+let res = await fetch(API + "/rooms/all");
+let data = await res.json();
+
+let search = document.getElementById("roomSearch").value.toLowerCase();
+
+let html = "";
+
+data.forEach(r => {
+
+if(r.id.toString().includes(search)){
+
+html += `
+<div class="row">
+<b>Room ${r.id}</b> (${r.type})<br>
+Capacity: ${r.capacity} | Available: ${r.available}<br>
+Members: ${r.members.length ? r.members.join(", ") : "None"}
+<br>
+<button onclick="selectRoom(${r.id})">Select</button>
+</div>
+`;
+
+}
+
+});
+
+document.getElementById("rooms").innerHTML = html;
+}
+
+/* ================= SELECT ================= */
+function selectStudent(id){
+document.getElementById("sid").value = id;
+}
+
+function selectRoom(id){
+document.getElementById("rid").value = id;
+}
+
+/* ================= DEALLOCATE ================= */
+async function deallocate(id){
+
+let form = new FormData();
+form.append("student_id", id);
+
+await fetch(API + "/deallocate", {
+method:"POST",
+body:form
+});
+
+loadStudents();
+loadRooms();
+}
+
+/* ================= LOAD ================= */
+loadStudents();
+loadRooms();
+
+</script>
+
+</body>
+</html>

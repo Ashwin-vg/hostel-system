@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Students</title>
+<link rel="stylesheet" href="/static/styles.css">
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+<img src="/static/logo.png" class="logo">
+<h3>HostelSys</h3>
+
+<ul>
+<li><a href="/static/index.html"><img src="/static/dashboard.png"> Dashboard</a></li>
+<li class="active"><a href="#"><img src="/static/student.png"> Students</a></li>
+<li><a href="/static/rooms.html"><img src="/static/room.png"> Rooms</a></li>
+<li><a href="/static/allocation.html"><img src="/static/allocation.png"> Allocation</a></li>
+<li><a href="/static/dues.html"><img src="/static/dues.png"> Dues</a></li>
+</ul>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<h1>Students</h1>
+
+<!-- ADD -->
+<input id="name" placeholder="Name">
+
+<select id="dept">
+<option>CSE</option>
+<option>ECE</option>
+<option>EEE</option>
+<option>ME</option>
+</select>
+
+<select id="gender">
+<option>Male</option>
+<option>Female</option>
+</select>
+
+<button onclick="add()">Add</button>
+
+<br><br>
+
+<!-- FILTER -->
+<input id="search" placeholder="Search name..." onkeyup="load()">
+
+<select id="deptFilter" onchange="load()">
+<option value="">All Dept</option>
+<option>CSE</option>
+<option>ECE</option>
+<option>EEE</option>
+<option>ME</option>
+</select>
+
+<select id="genderFilter" onchange="load()">
+<option value="">All Gender</option>
+<option>Male</option>
+<option>Female</option>
+</select>
+
+<br><br>
+
+<div id="list"></div>
+
+</div>
+</div>
+
+<script>
+
+const API = "http://127.0.0.1:8001";
+
+async function load(){
+
+let res = await fetch(API + "/students/all");
+let data = await res.json();
+
+let search = document.getElementById("search").value.toLowerCase();
+let dept = document.getElementById("deptFilter").value;
+let gender = document.getElementById("genderFilter").value;
+
+let html = "";
+
+data.forEach(s => {
+
+if(
+s.name.toLowerCase().includes(search) &&
+(dept=="" || s.dept===dept) &&
+(gender=="" || s.gender===gender)
+){
+
+html += `
+<div class="card" style="margin-bottom:15px;">
+
+<b>${s.name}</b> (ID:${s.id})  
+<br>${s.dept} - ${s.gender}  
+<br>Dues: ₹${s.dues}
+
+<br><br>
+
+<button onclick="deallocate(${s.id})">Deallocate</button>
+<button onclick="deleteStudent(${s.id})" style="background:red;">Delete</button>
+
+</div>
+`;
+
+}
+
+});
+
+document.getElementById("list").innerHTML = html || "No students found";
+}
+
+/* ================= ADD ================= */
+async function add(){
+
+let name = document.getElementById("name").value;
+
+if(!name){
+alert("Enter name");
+return;
+}
+
+let form = new FormData();
+form.append("name", name);
+form.append("dept", document.getElementById("dept").value);
+form.append("gender", document.getElementById("gender").value);
+
+await fetch(API + "/students", {
+method:"POST",
+body:form
+});
+
+document.getElementById("name").value = "";
+
+load();
+}
+
+/* ================= DEALLOCATE ================= */
+async function deallocate(id){
+
+let form = new FormData();
+form.append("student_id", id);
+
+let res = await fetch(API + "/deallocate", {
+method:"POST",
+body:form
+});
+
+let data = await res.json();
+alert(data.msg);
+
+load();
+}
+
+/* ================= DELETE ================= */
+async function deleteStudent(id){
+
+if(!confirm("Delete this student permanently?")) return;
+
+let form = new FormData();
+form.append("student_id", id);
+
+await fetch(API + "/students/delete", {
+method:"POST",
+body:form
+});
+
+load();
+}
+
+load();
+
+</script>
+
+</body>
+</html>

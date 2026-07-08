@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Dues</title>
+<link rel="stylesheet" href="/static/styles.css">
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+<img src="/static/logo.png" class="logo">
+<h3>HostelSys</h3>
+
+<ul>
+<li><a href="/static/index.html"><img src="/static/dashboard.png"> Dashboard</a></li>
+<li><a href="/static/students.html"><img src="/static/student.png"> Students</a></li>
+<li><a href="/static/rooms.html"><img src="/static/room.png"> Rooms</a></li>
+<li><a href="/static/allocation.html"><img src="/static/allocation.png"> Allocation</a></li>
+<li class="active"><a href="#"><img src="/static/dues.png"> Dues</a></li>
+</ul>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<h1>Dues Management</h1>
+
+<input id="search" placeholder="Search student..." onkeyup="loadDues()">
+
+<h3>Total Pending Amount: ₹ <span id="total">0</span></h3>
+
+<div id="list" class="card"></div>
+
+</div>
+</div>
+
+<script>
+
+const API = "http://127.0.0.1:8001";
+
+async function loadDues(){
+
+let res = await fetch(API + "/dues/all");
+let data = await res.json();
+
+let search = document.getElementById("search").value.toLowerCase();
+
+let html = "";
+let total = 0;
+
+data.forEach(s => {
+
+if(s.name.toLowerCase().includes(search)){
+
+total += s.dues;
+
+html += `
+<div class="row">
+<b>${s.name}</b> (ID: ${s.id}, ${s.dept}) - ₹${s.dues}
+<button onclick="pay(${s.id})">Mark Paid</button>
+</div>
+`;
+
+}
+
+});
+
+document.getElementById("list").innerHTML = html || "No pending dues";
+document.getElementById("total").innerText = total;
+}
+
+async function pay(id){
+
+let form = new FormData();
+form.append("student_id", id);
+
+await fetch(API + "/dues/pay", {
+method:"POST",
+body:form
+});
+
+loadDues(); // refresh
+}
+
+loadDues();
+
+</script>
+
+</body>
+</html>

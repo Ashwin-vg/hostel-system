@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Login</title>
+<link rel="stylesheet" href="/static/styles.css">
+</head>
+
+<body>
+
+<div class="main" style="max-width:400px; margin:auto; margin-top:120px; text-align:center;">
+
+<img src="/static/logo.png" style="width:120px; margin-bottom:20px;">
+
+<h1>Hostel Login</h1>
+
+<input id="username" placeholder="Username"><br><br>
+<input id="password" type="password" placeholder="Password"><br><br>
+
+<button onclick="login()">Login</button>
+
+</div>
+
+<script>
+
+async function login(){
+
+let username = document.getElementById("username").value;
+let password = document.getElementById("password").value;
+
+let form = new FormData();
+form.append("username", username);
+form.append("password", password);
+
+let res = await fetch("/login", {
+method: "POST",
+body: form
+});
+
+let data = await res.json();
+
+if(data.msg === "success"){
+window.location.href = "/static/index.html";
+} else {
+alert("Invalid login");
+}
+
+}
+
+</script>
+
+</body>
+</html>
